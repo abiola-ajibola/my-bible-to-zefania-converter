@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 import sqlite3
 
 
-def converter(biblename, source, output):
+def convert(*,source, biblename, output):
     root_element = f"""<XMLBIBLE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" biblename="{biblename}">
  </XMLBIBLE>"""
 
