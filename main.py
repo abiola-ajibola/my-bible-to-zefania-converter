@@ -1,5 +1,5 @@
 import argparse
-from converter import converter
+from converter import convert
 
 parser = argparse.ArgumentParser(
     description="A tool to convert MyBible modules on Android to Zefania"
@@ -15,4 +15,4 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-converter(args.biblename, args.source, args.output)
+convert(source=args.source, biblename=args.biblename, output=args.output)
