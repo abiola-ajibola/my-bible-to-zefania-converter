@@ -2,15 +2,22 @@ import xml.etree.ElementTree as ET
 import sqlite3
 
 
-def convert(*,source, biblename, output):
+def convert(*, source, biblename, output):
     root_element = f"""<XMLBIBLE xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" biblename="{biblename}">
  </XMLBIBLE>"""
 
     connection = sqlite3.connect(source)
     cursor = connection.cursor()
-    
-    books = dict(cursor.execute("SELECT book_number, long_name FROM books;").fetchall())
+
+    books = cursor.execute(
+        "SELECT book_number, short_name, long_name FROM books;"
+    ).fetchall()
     root = ET.fromstring(root_element)
+
+    books_dict = {}
+
+    for bnumber, short_name, long_name in books:
+        books_dict.update({bnumber: {"short_name": short_name, "long_name": long_name}})
 
     processed_verses = set()
     processed_chapters = set()
@@ -19,11 +26,6 @@ def convert(*,source, biblename, output):
     book_full = cursor.execute("SELECT * FROM verses;").fetchall()
 
     for book_number, chapter, verse, text in book_full:
-        identifier = {
-            "book_number": book_number,
-            "chapter": chapter,
-            "verse": verse,
-        }
 
         if str(book_number) in processed_books:
             book_element = root.find(f'.//BIBLEBOOK[@bnumber="{str(book_number)}"]')
@@ -47,7 +49,8 @@ def convert(*,source, biblename, output):
         else:
             book_element = ET.Element("BIBLEBOOK")
             book_element.set("bnumber", str(book_number))
-            book_element.set("bname", books[book_number])
+            book_element.set("bname", books_dict[book_number]["short_name"])
+            book_element.set("bsname", books_dict[book_number]["long_name"])
             root.append(book_element)
             processed_books.add(str(book_number))
             chapter_element = ET.Element("CHAPTER")
